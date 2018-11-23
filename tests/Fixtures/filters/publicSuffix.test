@@ -1,0 +1,19 @@
+--TEST--
+"publicSuffix" filter
+--TEMPLATE--
+{{ icann_host|publicSuffix('ICANN_DOMAINS') }}
+{{ private_host|publicSuffix('PRIVATE_DOMAINS') }}
+{{ private_host|publicSuffix('ICANN_DOMAINS') }}
+{{ icann_host|publicSuffix('foo') }}
+{{ private_host|publicSuffix('foo') }}
+--DATA--
+return [
+    'icann_host' => 'www.bbc.co.uk',
+    'private_host' => 'foo.domain-parser.github.io',
+]
+--EXPECT--
+co.uk
+github.io
+io
+co.uk
+github.io

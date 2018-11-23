@@ -1,0 +1,22 @@
+--TEST--
+"host_to_ascii" filter
+--TEMPLATE--
+{{ basic_ascii|host_to_ascii }}
+{{ basic_unicode|host_to_ascii }}
+{{ invalid_url|host_to_ascii }}
+{{ url_without_host|host_to_ascii }}
+{{ url_with_ip_host|host_to_ascii }}
+--DATA--
+return [
+    'basic_ascii' => 'https://user:pass@bbc.co.uk/path?query#fragment',
+    'basic_unicode' => 'https://user:pass@www.食狮.公司.cn/path?query#fragment',
+    'invalid_url' => '::',
+    'url_without_host' => '/path?query#fragment',
+    'url_with_ip_host' => 'https://user@127.0.0.1/path?query#fragment',
+]
+--EXPECT--
+https://user@bbc.co.uk/path?query#fragment
+https://user@www.xn--85x722f.xn--55qx5d.cn/path?query#fragment
+::
+/path?query#fragment
+https://user@127.0.0.1/path?query#fragment

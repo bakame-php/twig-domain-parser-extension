@@ -1,0 +1,19 @@
+--TEST--
+"subDomain" filter
+--TEMPLATE--
+{{ icann_host|subDomain('ICANN_DOMAINS') }}
+{{ private_host|subDomain('PRIVATE_DOMAINS') }}
+{{ private_host|subDomain('ICANN_DOMAINS') }}
+{{ icann_host|subDomain('foo') }}
+{{ private_host|subDomain('foo') }}
+--DATA--
+return [
+    'icann_host' => 'www.bbc.co.uk',
+    'private_host' => 'foo.domain-parser.github.io',
+]
+--EXPECT--
+www
+foo
+foo.domain-parser
+www
+foo
