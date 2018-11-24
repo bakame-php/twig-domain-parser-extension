@@ -15,10 +15,9 @@
         }
     ],
     "require": {
-        "php": ">=7.0.0",
+        "php": ">=7.0.10",
         "jeremykendall/php-domain-parser": "^5.4",
-        "twig/twig": "^2.5",
-        "league/uri-parser": "^1.4"
+        "twig/twig": "^2.5"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.7",

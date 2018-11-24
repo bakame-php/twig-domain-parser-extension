@@ -1,26 +1,34 @@
 --TEST--
-"domain" function
+"resolve_domain" function
 --TEMPLATE--
-domain: {{ domain(host).content }}
-subDomain : {{ domain(host).subDomain }}
-registrableDomain : {{ domain(host).registrableDomain }}
-publicSuffix : {{ domain(host).publicSuffix }}
-isICANN : {{ domain(host).ICANN ? 'ok' : 'ko' }}
-isPrivate : {{ domain(host).private ? 'ok' : 'ko' }}
-isKnown : {{ domain(host).known ? 'ok' : 'ko' }}
-ascii : {{ domain(host).toAscii.content }}
-unicode : {{ domain(host).toUnicode.content }}
-label : {{ domain(host).label(0) }}
+domain: {{ resolve_domain(icann_host).content }}
+sub domain 1 : {{ resolve_domain(icann_host).subDomain }}
+sub domain 2 : {{ resolve_domain('foo.bar.github.io', 'ICANN_DOMAINS').subDomain }}
+registrable domain : {{ resolve_domain(icann_host).registrableDomain }}
+public suffix 1 : {{ resolve_domain(icann_host).publicSuffix }}
+public suffix 2 : {{ resolve_domain(private_host).publicSuffix }}
+public suffix 3 : {{ resolve_domain(private_host, 'ICANN_DOMAINS').publicSuffix }}
+public suffix 4 : {{ resolve_domain(private_host, constant('Pdp\\Rules::PRIVATE_DOMAINS')).publicSuffix }}
+isICANN : {{ resolve_domain(icann_host).ICANN ? 'ok' : 'ko' }}
+isPrivate : {{ resolve_domain(icann_host).private ? 'ok' : 'ko' }}
+isKnown : {{ resolve_domain(icann_host).known ? 'ok' : 'ko' }}
+ascii : {{ resolve_domain(icann_host).toAscii.content }}
+unicode : {{ resolve_domain(icann_host).toUnicode.content }}
+label : {{ resolve_domain(icann_host).label(0) }}
 --DATA--
 return array(
-    'host' => 'www.BbC.cO.Uk',
-    ''
+    'icann_host' => 'www.BbC.cO.Uk',
+    'private_host' => 'foo.bar.github.io',
 )
 --EXPECT--
 domain: www.bbc.co.uk
-subDomain : www
-registrableDomain : bbc.co.uk
-publicSuffix : co.uk
+sub domain 1 : www
+sub domain 2 : foo.bar
+registrable domain : bbc.co.uk
+public suffix 1 : co.uk
+public suffix 2 : github.io
+public suffix 3 : io
+public suffix 4 : github.io
 isICANN : ok
 isPrivate : ko
 isKnown : ok

@@ -24,10 +24,10 @@ final class DomainParserExtensionIntegrationTest extends Twig_Test_IntegrationTe
 {
     public function getExtensions(): array
     {
-        $manager = new Manager(new Cache(), new CurlHttpClient());
-
         return [
-            new DomainParserExtension($manager->getRules(), $manager->getTLDs()),
+            DomainParserExtension::createFromManager(
+                new Manager(new Cache(), new CurlHttpClient())
+            ),
         ];
     }
 
