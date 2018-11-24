@@ -1,0 +1,16 @@
+--TEST--
+"icannSuffix" test
+--TEMPLATE--
+{{ icann_host is icannSuffix ? 'ok' : 'ko' }}
+{{ private_host is icannSuffix ? 'ok' : 'ko' }}
+{{ unkown_host is icannSuffix ? 'ok' : 'ko' }}
+--DATA--
+return array(
+    'icann_host' => 'www.bbc.co.uk',
+    'private_host' => 'foo.domain-parser.github.io',
+    'unkown_host' => 'foo.bar.example',
+)
+--EXPECT--
+ok
+ko
+ko

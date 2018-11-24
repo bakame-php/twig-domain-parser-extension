@@ -1,0 +1,29 @@
+--TEST--
+"domain" function
+--TEMPLATE--
+domain: {{ domain(host).content }}
+subDomain : {{ domain(host).subDomain }}
+registrableDomain : {{ domain(host).registrableDomain }}
+publicSuffix : {{ domain(host).publicSuffix }}
+isICANN : {{ domain(host).ICANN ? 'ok' : 'ko' }}
+isPrivate : {{ domain(host).private ? 'ok' : 'ko' }}
+isKnown : {{ domain(host).known ? 'ok' : 'ko' }}
+ascii : {{ domain(host).toAscii.content }}
+unicode : {{ domain(host).toUnicode.content }}
+label : {{ domain(host).label(0) }}
+--DATA--
+return array(
+    'host' => 'www.BbC.cO.Uk',
+    ''
+)
+--EXPECT--
+domain: www.bbc.co.uk
+subDomain : www
+registrableDomain : bbc.co.uk
+publicSuffix : co.uk
+isICANN : ok
+isPrivate : ko
+isKnown : ok
+ascii : www.bbc.co.uk
+unicode : www.bbc.co.uk
+label : uk

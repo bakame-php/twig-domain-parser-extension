@@ -7,10 +7,10 @@
 {{ icann_host|publicSuffix('foo') }}
 {{ private_host|publicSuffix('foo') }}
 --DATA--
-return [
+return array(
     'icann_host' => 'www.bbc.co.uk',
     'private_host' => 'foo.domain-parser.github.io',
-]
+)
 --EXPECT--
 co.uk
 github.io

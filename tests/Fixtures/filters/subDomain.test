@@ -7,10 +7,10 @@
 {{ icann_host|subDomain('foo') }}
 {{ private_host|subDomain('foo') }}
 --DATA--
-return [
+return array(
     'icann_host' => 'www.bbc.co.uk',
     'private_host' => 'foo.domain-parser.github.io',
-]
+)
 --EXPECT--
 www
 foo

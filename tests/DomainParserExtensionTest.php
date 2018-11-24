@@ -3,8 +3,8 @@
 /**
  * Twig PHP Domain Parser Extension.
  *
- * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
- * @license    https://github.com/bakame-php/twig-domain-parser-extension/blob/master/LICENSE (MIT License)
+ * @author  Ignace Nyamagana Butera <nyamsprod@gmail.com>
+ * @license https://github.com/bakame-php/twig-domain-parser-extension/blob/master/LICENSE (MIT License)
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,6 +17,7 @@ namespace BakameTest\Pdp\Twig;
 use Bakame\Pdp\Twig\DomainParserExtension;
 use Pdp\Cache;
 use Pdp\CurlHttpClient;
+use Pdp\Domain;
 use Pdp\Manager;
 use Pdp\Rules;
 use PHPUnit\Framework\TestCase;
@@ -36,64 +37,18 @@ final class DomainParserExtensionTest extends TestCase
 
     /**
      * @covers ::getDomain
-     *
-     * @dataProvider getDomainProvider
      */
-    public function testGetDomain(string $url, string $type, string $expected)
+    public function testGetDomainTest()
     {
-        self::assertSame($expected, $this->extension->getDomain($url, $type));
+        self::assertInstanceOf(Domain::class, $this->extension->getDomain('foo.example.com'));
     }
 
-    public function getDomainProvider(): array
-    {
-        return [
-            'ascii domain' => [
-                'url' => 'https://www.bbc.co.uk:80',
-                'type' => 'ascii',
-                'expected' => 'www.bbc.co.uk',
-            ],
-            'unicode domain' => [
-                'url' => 'https://www.食狮.公司.cn:443',
-                'type' => 'unicode',
-                'expected' => 'www.食狮.公司.cn',
-            ],
-            'unicode to ascii domain' => [
-                'url' => 'https://www.食狮.公司.cn:443',
-                'type' => 'ascii',
-                'expected' => 'www.xn--85x722f.xn--55qx5d.cn',
-            ],
-            'ascii to unicode domain' => [
-                'url' => 'https://www.xn--85x722f.xn--55qx5d.cn:443',
-                'type' => 'unicode',
-                'expected' => 'www.食狮.公司.cn',
-            ],
-            'invalid domain' => [
-                'url' => '::',
-                'type' => 'unicode',
-                'expected' => '',
-            ],
-            'url without host' => [
-                'url' => 'scheme:path',
-                'type' => 'unicode',
-                'expected' => '',
-            ],
-            'url with IP host' => [
-                'url' => 'https://127.0.0.1',
-                'type' => 'unicode',
-                'expected' => '127.0.0.1',
-            ],
-            'invalid type used' => [
-                'url' => 'https://www.食狮.公司.cn:443',
-                'type' => 'foo',
-                'expected' => 'www.食狮.公司.cn',
-            ],
-        ];
-    }
 
     /**
      * @covers ::getSubDomain
      * @covers ::getRegistrableDomain
      * @covers ::getPublicSuffix
+     * @covers ::filterSection
      *
      * @dataProvider getSubDomainProvider
      */
@@ -151,17 +106,24 @@ final class DomainParserExtensionTest extends TestCase
     }
 
     /**
-     * @covers ::isValidTld
-     * @covers ::isValidICANNSuffix
-     * @covers ::isValidPrivateSuffix
+     * @covers ::isTopLevelDomain
+     * @covers ::isICANN
+     * @covers ::isPrivate
+     * @covers ::isKnown
      *
      * @dataProvider isValidDataProvider
      */
-    public function testIsValidMethods(string $host, bool $isValidTld, bool $isValidICANN, bool $isValidPrivate)
-    {
-        self::assertSame($isValidTld, $this->extension->isValidTld($host));
-        self::assertSame($isValidICANN, $this->extension->isValidICANNSuffix($host));
-        self::assertSame($isValidPrivate, $this->extension->isValidPrivateSuffix($host));
+    public function testIsValidMethods(
+        string $host,
+        bool $isTopLevelDomain,
+        bool $isICANN,
+        bool $isPrivate,
+        bool $isKnown
+    ) {
+        self::assertSame($isTopLevelDomain, $this->extension->isTopLevelDomain($host));
+        self::assertSame($isICANN, $this->extension->isICANN($host));
+        self::assertSame($isPrivate, $this->extension->isPrivate($host));
+        self::assertSame($isKnown, $this->extension->isKnown($host));
     }
 
     public function isValidDataProvider()
@@ -169,76 +131,38 @@ final class DomainParserExtensionTest extends TestCase
         return [
             'basic icann website' => [
                 'host' => 'bbc.co.uk',
-                'isValidTld' => true,
-                'isValidICANN' => true,
-                'isValidPrivate' => false,
+                'isTopLevelDomain' => true,
+                'isICANN' => true,
+                'isPrivate' => false,
+                'isKnown' => true,
             ],
             'basic private website' => [
                 'host' => 'foo.github.io',
-                'isValidTld' => true,
-                'isValidICANN' => true,
-                'isValidPrivate' => true,
+                'isTopLevelDomain' => true,
+                'isICANN' => false,
+                'isPrivate' => true,
+                'isKnown' => true,
             ],
-            'host is too short' => [
+            'result depend on the domaine label length' => [
                 'host' => 'github.io',
-                'isValidTld' => true,
-                'isValidICANN' => true,
-                'isValidPrivate' => false,
+                'isTopLevelDomain' => true,
+                'isICANN' => false,
+                'isPrivate' => false,
+                'isKnown' => false,
             ],
             'invalid host' => [
                 'host' => '::',
-                'isValidTld' => false,
-                'isValidICANN' => false,
-                'isValidPrivate' => false,
+                'isTopLevelDomain' => false,
+                'isICANN' => false,
+                'isPrivate' => false,
+                'isKnown' => false,
             ],
             'non registred host' => [
-                'host' => 'localhost',
-                'isValidTld' => false,
-                'isValidICANN' => false,
-                'isValidPrivate' => false,
-            ],
-        ];
-    }
-
-    /**
-     * @covers ::hostToAscii
-     * @covers ::hostToUnicode
-     *
-     * @dataProvider urlConverterDataProvider
-     */
-    public function testURLConverter(string $url, string $ascii_url, string $unicode_url)
-    {
-        self::assertSame($ascii_url, $this->extension->hostToAscii($url));
-        self::assertSame($unicode_url, $this->extension->hostToUnicode($url));
-    }
-
-    public function urlConverterDataProvider()
-    {
-        return [
-            'basic ascii URL' => [
-                'url' => 'https://user:pass@bbc.co.uk/path?query#fragment',
-                'ascii_url' => 'https://user@bbc.co.uk/path?query#fragment',
-                'unicode_url' => 'https://user@bbc.co.uk/path?query#fragment',
-            ],
-            'basic unicode URL' => [
-                'url' => 'https://user:pass@www.食狮.公司.cn/path?query#fragment',
-                'ascii_url' => 'https://user@www.xn--85x722f.xn--55qx5d.cn/path?query#fragment',
-                'unicode_url' => 'https://user@www.食狮.公司.cn/path?query#fragment',
-            ],
-            'invalid url' => [
-                'url' => '::',
-                'ascii_url' => '::',
-                'unicode_url' => '::',
-            ],
-            'url without host' => [
-                'url' => '/path?query#fragment',
-                'ascii_url' => '/path?query#fragment',
-                'unicode_url' => '/path?query#fragment',
-            ],
-            'url without invalid host' => [
-                'url' => 'https://user@127.0.0.1/path?query#fragment',
-                'ascii_url' => 'https://user@127.0.0.1/path?query#fragment',
-                'unicode_url' => 'https://user@127.0.0.1/path?query#fragment',
+                'host' => 'example.localhost',
+                'isTopLevelDomain' => false,
+                'isICANN' => false,
+                'isPrivate' => false,
+                'isKnown' => false,
             ],
         ];
     }

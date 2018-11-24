@@ -7,10 +7,10 @@
 {{ icann_host|registrableDomain('foo') }}
 {{ private_host|registrableDomain('foo') }}
 --DATA--
-return [
+return array(
     'icann_host' => 'www.bbc.co.uk',
     'private_host' => 'foo.domain-parser.github.io',
-]
+)
 --EXPECT--
 bbc.co.uk
 domain-parser.github.io

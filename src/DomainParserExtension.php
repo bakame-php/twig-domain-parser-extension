@@ -3,8 +3,8 @@
 /**
  * Twig PHP Domain Parser Extension.
  *
- * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
- * @license    https://github.com/bakame-php/twig-domain-parser-extension/blob/master/LICENSE (MIT License)
+ * @author  Ignace Nyamagana Butera <nyamsprod@gmail.com>
+ * @license https://github.com/bakame-php/twig-domain-parser-extension/blob/master/LICENSE (MIT License)
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -20,10 +20,9 @@ use Pdp\TopLevelDomains;
 use Throwable;
 use Twig_Extension;
 use Twig_SimpleFilter;
+use Twig_SimpleFunction;
 use Twig_SimpleTest;
 use function in_array;
-use function League\Uri\build;
-use function League\Uri\parse;
 
 final class DomainParserExtension extends Twig_Extension
 {
@@ -35,12 +34,15 @@ final class DomainParserExtension extends Twig_Extension
     /**
      * @var TopLevelDomains
      */
-    private $tldCollection;
+    private $topLevelDomains;
 
-    public function __construct(Rules $rules, TopLevelDomains $tldCollection)
+    /**
+     * New instance.
+     */
+    public function __construct(Rules $rules, TopLevelDomains $topLevelDomains)
     {
         $this->rules = $rules;
-        $this->tldCollection = $tldCollection;
+        $this->topLevelDomains = $topLevelDomains;
     }
 
     /**
@@ -49,12 +51,19 @@ final class DomainParserExtension extends Twig_Extension
     public function getFilters(): array
     {
         return [
-            new Twig_SimpleFilter('domain', [$this, 'getDomain']),
             new Twig_SimpleFilter('subDomain', [$this, 'getSubDomain']),
             new Twig_SimpleFilter('registrableDomain', [$this, 'getRegistrableDomain']),
             new Twig_SimpleFilter('publicSuffix', [$this, 'getPublicSuffix']),
-            new Twig_SimpleFilter('host_to_unicode', [$this, 'hostToUnicode']),
-            new Twig_SimpleFilter('host_to_ascii', [$this, 'hostToAscii']),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFunctions(): array
+    {
+        return [
+            new Twig_SimpleFunction('domain', [$this, 'getDomain']),
         ];
     }
 
@@ -64,103 +73,45 @@ final class DomainParserExtension extends Twig_Extension
     public function getTests(): array
     {
         return [
-            new Twig_SimpleTest('tld', [$this, 'isValidTLD']),
-            new Twig_SimpleTest('icannSuffix', [$this, 'isValidICANNSuffix']),
-            new Twig_SimpleTest('privateSuffix', [$this, 'isValidPrivateSuffix']),
+            new Twig_SimpleTest('topLevelDomain', [$this, 'isTopLevelDomain']),
+            new Twig_SimpleTest('icannSuffix', [$this, 'isICANN']),
+            new Twig_SimpleTest('privateSuffix', [$this, 'isPrivate']),
+            new Twig_SimpleTest('knownSuffix', [$this, 'isKnown']),
         ];
     }
 
     /**
-     * Converts the host part of an URI into its ascii representation.
+     * Tells whether the host contains a valid Top Level Domains according to the IANA records.
      *
-     * If the url can not be parsed the input is returned as is.
-     *
-     * @param mixed $url a string or a stringable object
-     *
-     * @return string|mixed
+     * @param mixed $host a string or a stringable object
      */
-    public function hostToAscii($url)
+    public function isTopLevelDomain($host): bool
     {
         try {
-            $components = parse($url);
+            return $this->topLevelDomains->contains((new Domain($host))->getLabel(0));
         } catch (Throwable $e) {
-            return $url;
+            return false;
         }
-
-        if (null === $components['host']) {
-            return build($components);
-        }
-
-        $domain = $this->rules->resolve($components['host']);
-        if (null === $domain->getContent()) {
-            return build($components);
-        }
-
-        $components['host'] = $domain->toAscii()->getContent();
-
-        return build($components);
     }
 
     /**
-     * Converts the host part of an URI into its unicode representation.
-     *
-     * If the url can not be parsed the input is returned as is.
-     *
-     * @param mixed $url a string or a stringable object
-     *
-     * @return string|mixed
+     * Returns the domain object.
      */
-    public function hostToUnicode($url)
+    public function getDomain($host, string $section = ''): Domain
     {
-        try {
-            $components = parse($url);
-        } catch (Throwable $e) {
-            return $url;
-        }
-
-        if (null === $components['host']) {
-            return build($components);
-        }
-
-        $domain = $this->rules->resolve($components['host']);
-        if (null === $domain->getContent()) {
-            return build($components);
-        }
-
-        $components['host'] = $domain->toUnicode()->getContent();
-
-        return build($components);
+        return $this->rules->resolve($host, $this->filterSection($section));
     }
 
     /**
-     * Returns the domain name of the submitted URL.
-     *
-     * If the url can not be parsed an empty string is returned
-     *
-     * @param mixed $url a string or a stringable object
+     * Returns the supported section.
      */
-    public function getDomain($url, string $type = 'ascii'): string
+    private function filterSection(string $section): string
     {
-        try {
-            $components = parse($url);
-        } catch (Throwable $e) {
-            return '';
+        if (in_array($section, ['', Rules::ICANN_DOMAINS, Rules::PRIVATE_DOMAINS], true)) {
+            return $section;
         }
 
-        $domain = $this->rules->resolve($components['host']);
-        if (null === $domain->getContent()) {
-            return (string) $components['host'];
-        }
-
-        if ('ascii' === $type) {
-            return (string) $domain->toAscii()->getContent();
-        }
-
-        if ('unicode' === $type) {
-            return (string) $domain->toUnicode()->getContent();
-        }
-
-        return $domain->getContent();
+        return '';
     }
 
     /**
@@ -172,11 +123,7 @@ final class DomainParserExtension extends Twig_Extension
      */
     public function getSubDomain($host, string $section = ''): string
     {
-        if (!in_array($section, ['', Rules::ICANN_DOMAINS, Rules::PRIVATE_DOMAINS], true)) {
-            $section = '';
-        }
-
-        return (string) $this->rules->resolve($host, $section)->getSubDomain();
+        return (string) $this->getDomain($host, $section)->getSubDomain();
     }
 
     /**
@@ -186,13 +133,9 @@ final class DomainParserExtension extends Twig_Extension
      *
      * @param mixed $host a string or a stringable object
      */
-    public function getRegistrableDomain($host, $section = ''): string
+    public function getRegistrableDomain($host, string $section = ''): string
     {
-        if (!in_array($section, ['', Rules::ICANN_DOMAINS, Rules::PRIVATE_DOMAINS], true)) {
-            $section = '';
-        }
-
-        return (string) $this->rules->resolve($host, $section)->getRegistrableDomain();
+        return (string) $this->getDomain($host, $section)->getRegistrableDomain();
     }
 
     /**
@@ -202,27 +145,19 @@ final class DomainParserExtension extends Twig_Extension
      *
      * @param mixed $host a string or a stringable object
      */
-    public function getPublicSuffix($host, $section = ''): string
+    public function getPublicSuffix($host, string $section = ''): string
     {
-        if (!in_array($section, ['', Rules::ICANN_DOMAINS, Rules::PRIVATE_DOMAINS], true)) {
-            $section = '';
-        }
-
-        return (string) $this->rules->resolve($host, $section)->getPublicSuffix();
+        return (string) $this->getDomain($host, $section)->getPublicSuffix();
     }
 
     /**
-     * Tells whether the host contains a valid Top Level Domains according to the IANA records.
+     * Tells whether the host contains a known public suffix.
      *
      * @param mixed $host a string or a stringable object
      */
-    public function isValidTLD($host): bool
+    public function isKnown($host): bool
     {
-        try {
-            return $this->tldCollection->contains((new Domain($host))->getLabel(0));
-        } catch (Throwable $e) {
-            return false;
-        }
+        return $this->getDomain($host)->isKnown();
     }
 
     /**
@@ -230,9 +165,9 @@ final class DomainParserExtension extends Twig_Extension
      *
      * @param mixed $host a string or a stringable object
      */
-    public function isValidICANNSuffix($host): bool
+    public function isICANN($host): bool
     {
-        return $this->rules->resolve($host, Rules::ICANN_DOMAINS)->isICANN();
+        return $this->getDomain($host)->isICANN();
     }
 
     /**
@@ -240,8 +175,8 @@ final class DomainParserExtension extends Twig_Extension
      *
      * @param mixed $host a string or a stringable object
      */
-    public function isValidPrivateSuffix($host): bool
+    public function isPrivate($host): bool
     {
-        return $this->rules->resolve($host, Rules::PRIVATE_DOMAINS)->isPrivate();
+        return $this->getDomain($host)->isPrivate();
     }
 }
