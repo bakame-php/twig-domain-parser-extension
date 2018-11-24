@@ -4,13 +4,16 @@
 {{ icann_host is topLevelDomain ? 'ok' : 'ko' }}
 {{ private_host is topLevelDomain ? 'ok' : 'ko' }}
 {{ unkown_host is topLevelDomain ? 'ok' : 'ko' }}
+{{ ip_host is topLevelDomain ? 'ok' : 'ko' }}
 --DATA--
 return array(
     'icann_host' => 'www.bbc.co.uk',
     'private_host' => 'foo.domain-parser.github.io',
     'unkown_host' => 'foo.bar.example',
+    'ip_host' => '127.0.0.1',
 )
 --EXPECT--
 ok
 ok
+ko
 ko
