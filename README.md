@@ -33,11 +33,11 @@ use Pdp\CurlHttpClient;
 use Pdp\Manager;
 use Bakame\Twig\Pdp\Extension;
 
-
 $manager = new Manager(new Cache(), new CurlHttpClient(), '1 DAY');
-$PdpExtension = new Extension($manager->getRules(), $manager->getTLDs());
+$rules = $manager->getRules();
+$topLevelDomains = $manager->getTLDs();
 
-$twig->addExtension($PdpExtension);
+$twig->addExtension(new Extension($rules, $topLevelDomains));
 ~~~
 
 Because the `Pdp\Cache` class implements PSR-16, you can use any PSR-16 compatible cache driver. For instance you can use the Symfony cache component instead:
@@ -55,11 +55,9 @@ use Symfony\Component\Cache\Simple\PDOCache;
 
 $dbh = new PDO('mysql:dbname=testdb;host=127.0.0.1', 'dbuser', 'dbpass');
 $cache = new PDOCache($dbh, 'psl', 86400);
-
 $manager = new Manager($cache, new CurlHttpClient(), 86400);
-$PdpExtension = Extension::createFromManager($manager);
 
-$twig->addExtension($PdpExtension);
+$twig->addExtension(Extension::createFromManager($manager));
 ~~~
 
 *You can directly get an `Extension` instance from a `Pdp\Manager` object using the `createFromManager` named constructor.*
@@ -140,12 +138,12 @@ License
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
 
 
-[ico-travis]: https://img.shields.io/travis/bakame/twig-domain-parser-extension/master.svg?style=flat-square
+[ico-travis]: https://img.shields.io/travis/bakame-php/twig-domain-parser-extension/master.svg?style=flat-square
 [ico-packagist]: https://img.shields.io/packagist/dt/bakame/twig-domain-parser-extension.svg?style=flat-square
-[ico-release]: https://img.shields.io/github/release/bakame/twig-domain-parser-extension.svg?style=flat-square
+[ico-release]: https://img.shields.io/github/release/bakame-php/twig-domain-parser-extension.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
 
-[link-travis]: https://travis-ci.org/bakame/twig-domain-parser-extension
+[link-travis]: https://travis-ci.org/bakame-php/twig-domain-parser-extension
 [link-packagist]: https://packagist.org/packages/bakame/twig-domain-parser-extension
-[link-release]: https://github.com/bakame/twig-domain-parser-extension/releases
-[link-license]: https://github.com/bakame/twig-domain-parser-extension/blob/master/LICENSE
+[link-release]: https://github.com/bakame-php/twig-domain-parser-extension/releases
+[link-license]: https://github.com/bakame-php/twig-domain-parser-extension/blob/master/LICENSE
