@@ -28,10 +28,10 @@ Setup
 
 ~~~php
 
+use Bakame\Twig\Pdp\Extension;
 use Pdp\Cache;
 use Pdp\CurlHttpClient;
 use Pdp\Manager;
-use Bakame\Twig\Pdp\Extension;
 
 $manager = new Manager(new Cache(), new CurlHttpClient(), '1 DAY');
 $rules = $manager->getRules();
@@ -48,9 +48,9 @@ $ composer require symfony/cache
 
 ~~~php
 
+use Bakame\Twig\Pdp\Extension;
 use Pdp\CurlHttpClient;
 use Pdp\Manager;
-use Bakame\Twig\Pdp\Extension;
 use Symfony\Component\Cache\Simple\PDOCache;
 
 $dbh = new PDO('mysql:dbname=testdb;host=127.0.0.1', 'dbuser', 'dbpass');
