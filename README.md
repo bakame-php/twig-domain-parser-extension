@@ -1,6 +1,11 @@
 Twig Domain parser extension
 ===========================
 
+[![Build Status][ico-travis]][link-travis]
+[![Total Downloads][ico-packagist]][link-packagist]
+[![Latest Stable Version][ico-release]][link-release]
+[![Software License][ico-license]][link-license]
+
 This package provides Twig extensions for PHP Domain parser v5.4+
 
 
@@ -85,8 +90,8 @@ The `resolve_domain` parameters are:
 
 - `$host` a scalar or a stringable object
 - `$section` : a string representing one of the PSL section
-	- `Rules::ICANN_DOMAINS` : to resolve the domain against the PSL ICANN section
-	- `Rules::PRIVATE_DOMAINS` : to resolve the domain against the PSL private section
+    - `Rules::ICANN_DOMAINS` : to resolve the domain against the PSL ICANN section
+    - `Rules::PRIVATE_DOMAINS` : to resolve the domain against the PSL private section
 
 By default the resolution is made against the section with the longest public suffix.
 
@@ -133,3 +138,14 @@ License
 -------
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
+
+
+[ico-travis]: https://img.shields.io/travis/bakame/twig-domain-parser-extension/master.svg?style=flat-square
+[ico-packagist]: https://img.shields.io/packagist/dt/bakame/twig-domain-parser-extension.svg?style=flat-square
+[ico-release]: https://img.shields.io/github/release/bakame/twig-domain-parser-extension.svg?style=flat-square
+[ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
+
+[link-travis]: https://travis-ci.org/bakame/twig-domain-parser-extension
+[link-packagist]: https://packagist.org/packages/bakame/twig-domain-parser-extension
+[link-release]: https://github.com/bakame/twig-domain-parser-extension/releases
+[link-license]: https://github.com/bakame/twig-domain-parser-extension/blob/master/LICENSE
