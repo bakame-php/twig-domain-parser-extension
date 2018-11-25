@@ -12,20 +12,20 @@
 
 declare(strict_types=1);
 
-namespace BakameTest\Pdp\Twig;
+namespace BakameTest\Twig\Pdp;
 
-use Bakame\Pdp\Twig\DomainParserExtension;
+use Bakame\Twig\Pdp\Extension;
 use Pdp\Cache;
 use Pdp\CurlHttpClient;
 use Pdp\Manager;
 use Twig_Test_IntegrationTestCase;
 
-final class DomainParserExtensionTest extends Twig_Test_IntegrationTestCase
+final class ExtensionTest extends Twig_Test_IntegrationTestCase
 {
     public function getExtensions(): array
     {
         return [
-            DomainParserExtension::createFromManager(
+            Extension::createFromManager(
                 new Manager(new Cache(), new CurlHttpClient())
             ),
         ];

@@ -12,8 +12,9 @@
 
 declare(strict_types=1);
 
-namespace Bakame\Pdp\Twig;
+namespace Bakame\Twig\Pdp;
 
+use Closure;
 use Pdp\Domain;
 use Pdp\Manager;
 use Pdp\Rules;
@@ -23,7 +24,7 @@ use Twig_Extension;
 use Twig_SimpleFunction;
 use Twig_SimpleTest;
 
-final class DomainParserExtension extends Twig_Extension
+final class Extension extends Twig_Extension
 {
     /**
      * @var Rules
@@ -58,7 +59,7 @@ final class DomainParserExtension extends Twig_Extension
     public function getFunctions(): array
     {
         return [
-            new Twig_SimpleFunction('resolve_domain', [$this, 'resolve']),
+            new Twig_SimpleFunction('resolve_domain', Closure::fromCallable([$this, 'resolve'])),
         ];
     }
 
@@ -68,7 +69,7 @@ final class DomainParserExtension extends Twig_Extension
     public function getTests(): array
     {
         return [
-            new Twig_SimpleTest('topLevelDomain', [$this, 'isTopLevelDomain']),
+            new Twig_SimpleTest('topLevelDomain', Closure::fromCallable([$this, 'isTopLevelDomain'])),
         ];
     }
 
@@ -77,7 +78,7 @@ final class DomainParserExtension extends Twig_Extension
      *
      * @param mixed $host a string or a stringable object
      */
-    public function isTopLevelDomain($host): bool
+    private function isTopLevelDomain($host): bool
     {
         try {
             return $this->topLevelDomains->contains((new Domain($host))->getLabel(0));
@@ -88,8 +89,10 @@ final class DomainParserExtension extends Twig_Extension
 
     /**
      * Returns the domain object.
+     *
+     * @param mixed $host a string or a stringable object
      */
-    public function resolve($host, string $section = ''): Domain
+    private function resolve($host, string $section = ''): Domain
     {
         static $sectionList = [
             Rules::ICANN_DOMAINS => Rules::ICANN_DOMAINS,
