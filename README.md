@@ -79,7 +79,7 @@ isKnown : {{ resolve_domain(host).known ? 'ok' : 'ko' }} {#  ok #}
 ascii : {{ resolve_domain(host).toAscii }} {#  www.xn--85x722f.xn--55qx5d.cn #}
 unicode : {{ resolve_domain(host).toUnicode }} {#  www.食狮.公司.cn #}
 label : {{ resolve_domain(host).label(0) }} {# cn #}
-publicSuffix : {{ resolve_domain('foo.github.io', constant('Pdp\\Rules::PRIVATE_DOMAINS')).publicSuffix }} {# io #}
+publicSuffix : {{ resolve_domain('foo.github.io', constant('Pdp\\Rules::PRIVATE_DOMAINS')).publicSuffix }} {# github.io #}
 ~~~
 
 The `resolve_domain` function returns a `Pdp\Domain` object you can use to manipulate to returns various informations about your hostname. The returned object is resolved againts the PSL resources using `Pdp\Rules::resolve` method. This means that you can optionnally decide which section the domain should be resolve too.

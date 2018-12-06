@@ -1,10 +1,9 @@
 <?php
 
 $header = <<<EOF
-Twig PHP Domain Parser Extension
+Twig PHP Domain Parser Extension (https://github.com/bakame-php/twig-domain-parser-extension)
 
-@author  Ignace Nyamagana Butera <nyamsprod@gmail.com>
-@license https://github.com/bakame-php/twig-domain-parser-extension/blob/master/LICENSE (MIT License)
+(c) Ignace Nyamagana Butera <nyamsprod@gmail.com>
 
 For the full copyright and license information, please view the LICENSE
 file that was distributed with this source code.
